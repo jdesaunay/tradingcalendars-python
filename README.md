@@ -7,11 +7,12 @@ systems (TARGET2, Fedwire, CHAPS…) and stock exchanges, including half days an
 - 50 currencies, 69 financial centres, 29 payment systems, 61 exchanges ([coverage](https://tradingcalendars.com/coverage))
 - Maintained from official sources, past and future years
 - Standard library only, Python 3.9+
+- Installs as `tradingcalendars-client`, imports as `tradingcalendars`
 
 ## Install
 
 ```bash
-pip install tradingcalendars
+pip install tradingcalendars-client
 ```
 
 Get a free API key (a minute, no card): https://tradingcalendars.com/signup?ref=pypi

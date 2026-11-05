@@ -5,7 +5,7 @@ Source: https://github.com/jdesaunay/tradingcalendars-python
 ## One-time setup
 1. GitHub: create the **public**, empty repo `jdesaunay/tradingcalendars-python`.
 2. PyPI (pypi.org, account with 2FA): Account → Publishing → **Add a new pending publisher**:
-   PyPI project `tradingcalendars`, owner `jdesaunay`, repo `tradingcalendars-python`,
+   PyPI project `tradingcalendars-client` (the plain name `tradingcalendars` is refused by PyPI as too similar to `trading-calendars`), owner `jdesaunay`, repo `tradingcalendars-python`,
    workflow `publish.yml`, environment `pypi`.
 3. GitHub repo → Settings → Environments → New environment `pypi`.
 
