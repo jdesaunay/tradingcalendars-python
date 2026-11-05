@@ -7,7 +7,7 @@ name = "tradingcalendars-client"
 version = "0.1.0"
 description = "Business days, T+N settlement dates and holidays for FX, banks, payment systems and exchanges (TradingCalendars.com API client)."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "JDE Ventures (TradingCalendars.com)", email = "contact@tradingcalendars.com" }]
 keywords = [
