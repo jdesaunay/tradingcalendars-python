@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tradingcalendars"
+version = "0.1.0"
+description = "Business days, T+N settlement dates and holidays for FX, banks, payment systems and exchanges (TradingCalendars.com API client)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "JDE Ventures (TradingCalendars.com)", email = "contact@tradingcalendars.com" }]
+keywords = [
+  "holidays", "business days", "settlement", "trading calendar", "market holidays",
+  "bank holidays", "fx", "value date", "exchange calendar", "TARGET2", "NYSE",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Financial and Insurance Industry",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Office/Business :: Financial",
+  "Topic :: Office/Business :: Scheduling",
+  "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://tradingcalendars.com"
+Documentation = "https://tradingcalendars.com/documentation"
+"API key (free)" = "https://tradingcalendars.com/signup?ref=pypi"
+Source = "https://github.com/jdesaunay/tradingcalendars-python"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+tradingcalendars = ["py.typed"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
