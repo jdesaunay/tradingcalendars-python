@@ -19,7 +19,7 @@ from tradingcalendars.errors import (
 )
 
 DEFAULT_BASE_URL = "https://api.tradingcalendars.com/v1"
-USER_AGENT = "tradingcalendars-python/0.1.0"
+USER_AGENT = "tradingcalendars-python/0.2.0"
 
 DateLike = Union[date, str]
 Calendars = Union[str, Sequence[str]]
@@ -153,6 +153,85 @@ class TradingCalendars:
         return self._get(
             "/business-days-between",
             {"calendars": _codes(calendars), "start": _iso(start), "end": _iso(end)},
+        )
+
+    # ---- conventions and schedules --------------------------------------
+    def adjust_date(
+        self, calendars: Calendars, day: DateLike, convention: str = "modified_following"
+    ) -> date:
+        """Move ``day`` to a business day with an ISDA business day convention:
+        ``following``, ``modified_following``, ``preceding``, ``modified_preceding``
+        (or ``F``, ``MF``, ``P``, ``MP``) or ``unadjusted``."""
+        return date.fromisoformat(self.adjust_date_details(calendars, day, convention)["adjusted"])
+
+    def adjust_date_details(
+        self, calendars: Calendars, day: DateLike, convention: str = "modified_following"
+    ) -> dict:
+        """Full answer, including the non-business days passed over and why."""
+        return self._get(
+            "/adjust-date",
+            {"calendars": _codes(calendars), "date": _iso(day), "convention": convention},
+        )
+
+    def schedule(
+        self,
+        calendars: Calendars,
+        start: DateLike,
+        end: DateLike,
+        frequency: str = "3M",
+        convention: str = "modified_following",
+        stub: str = "short_front",
+        end_of_month: bool = False,
+        payment_lag: int = 0,
+        fixing_lag: Optional[int] = None,
+        fixing_calendars: Optional[Calendars] = None,
+    ) -> list:
+        """Adjusted cash-flow schedule (swaps, bonds, loans): one dict per period with
+        ``start``, ``end``, ``start_unadjusted``, ``end_unadjusted``, ``payment_date`` and,
+        with ``fixing_lag``, ``fixing_date`` as ``datetime.date``; plus ``accrual_days``
+        and ``is_stub``. Use :meth:`schedule_details` for warnings and data coverage."""
+        payload = self.schedule_details(
+            calendars, start, end, frequency=frequency, convention=convention, stub=stub,
+            end_of_month=end_of_month, payment_lag=payment_lag, fixing_lag=fixing_lag,
+            fixing_calendars=fixing_calendars,
+        )
+        keys = ("start", "end", "start_unadjusted", "end_unadjusted", "payment_date", "fixing_date")
+        periods = []
+        for row in payload.get("periods", []):
+            row = dict(row)
+            for key in keys:
+                if row.get(key):
+                    row[key] = date.fromisoformat(row[key])
+            periods.append(row)
+        return periods
+
+    def schedule_details(
+        self,
+        calendars: Calendars,
+        start: DateLike,
+        end: DateLike,
+        frequency: str = "3M",
+        convention: str = "modified_following",
+        stub: str = "short_front",
+        end_of_month: bool = False,
+        payment_lag: int = 0,
+        fixing_lag: Optional[int] = None,
+        fixing_calendars: Optional[Calendars] = None,
+    ) -> dict:
+        return self._get(
+            "/schedule",
+            {
+                "calendars": _codes(calendars),
+                "start": _iso(start),
+                "end": _iso(end),
+                "frequency": frequency,
+                "convention": convention,
+                "stub": stub,
+                "end_of_month": "true" if end_of_month else "false",
+                "payment_lag": payment_lag,
+                "fixing_lag": fixing_lag,
+                "fixing_calendars": _codes(fixing_calendars) if fixing_calendars else None,
+            },
         )
 
     # ---- holidays --------------------------------------------------------

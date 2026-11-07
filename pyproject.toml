@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tradingcalendars-client"
-version = "0.1.0"
+version = "0.2.0"
 description = "Business days, T+N settlement dates and holidays for FX, banks, payment systems and exchanges (TradingCalendars.com API client)."
 readme = "README.md"
 requires-python = ">=3.10"

@@ -47,7 +47,29 @@ tc.market_status("XNYS")
 ```
 
 Every `*_details` variant (`add_business_days_details`, `is_business_day_details`,
-`business_days_between_details`) returns the full answer, including each skipped day and why.
+`business_days_between_details`, `adjust_date_details`, `schedule_details`) returns the full answer, including each skipped day and why.
+
+## Business day conventions and cash-flow schedules
+
+For swaps, bonds and loans: ISDA conventions on joint calendars, and adjusted schedules
+with payment and fixing dates. Holidays are stored through 2077, so long-dated trades
+don't run out of data.
+
+```python
+# Saturday 29 May 2027 under modified following, New York + London
+tc.adjust_date(["USNYC.BANK", "GBLON.BANK"], "2027-05-29", "modified_following")
+# datetime.date(2027, 5, 28)   (following gives 1 June: 31 May is a holiday in both)
+
+# Quarterly schedule, payment 2 days after each period end, fixing 2 London days before start
+for p in tc.schedule(["USD.FX", "GBP.FX"], "2026-11-26", "2027-11-26", frequency="3M",
+                     payment_lag=2, fixing_lag=2, fixing_calendars=["GBP.FX"]):
+    print(p["start"], p["end"], p["payment_date"], p["fixing_date"], p["accrual_days"])
+# 2026-11-27 2027-02-26 2027-03-02 2026-11-25 91   <- 26 Nov 2026 is Thanksgiving
+# ...
+```
+
+`schedule` also takes `stub` (`short_front`, `long_front`, `short_back`, `long_back`) and
+`end_of_month=True`; `schedule_details` returns warnings and data coverage too.
 
 ## With pandas or numpy
 

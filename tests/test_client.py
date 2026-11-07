@@ -120,3 +120,43 @@ def test_errors_carry_the_api_message(calls, status, error):
     replies["/v1/calendars"] = (status, {"detail": "Explained by the API."})
     with pytest.raises(error, match="Explained by the API"):
         TradingCalendars(api_key="k").calendars()
+
+
+def test_adjust_date_and_schedule(calls):
+    seen, replies = calls
+    replies["/v1/adjust-date"] = (200, {"adjusted": "2027-05-28", "moved": True})
+    replies["/v1/schedule"] = (
+        200,
+        {
+            "periods": [
+                {
+                    "period": 1,
+                    "start_unadjusted": "2026-11-26",
+                    "end_unadjusted": "2027-02-26",
+                    "start": "2026-11-27",
+                    "end": "2027-02-26",
+                    "payment_date": "2027-03-02",
+                    "fixing_date": "2026-11-25",
+                    "accrual_days": 91,
+                    "is_stub": False,
+                }
+            ]
+        },
+    )
+    tc = TradingCalendars(api_key="k")
+    assert tc.adjust_date(["USNYC.BANK", "GBLON.BANK"], "2027-05-29", "MF") == date(2027, 5, 28)
+    assert seen[-1]["query"] == {
+        "calendars": "USNYC.BANK,GBLON.BANK", "date": "2027-05-29", "convention": "MF",
+    }
+    periods = tc.schedule(
+        "USD.FX,GBP.FX", date(2026, 11, 26), "2027-11-26",
+        payment_lag=2, fixing_lag=2, fixing_calendars=["GBP.FX"], end_of_month=True,
+    )
+    assert periods[0]["start"] == date(2026, 11, 27)
+    assert periods[0]["payment_date"] == date(2027, 3, 2)
+    assert periods[0]["fixing_date"] == date(2026, 11, 25)
+    assert periods[0]["accrual_days"] == 91
+    query = seen[-1]["query"]
+    assert query["start"] == "2026-11-26" and query["end_of_month"] == "true"
+    assert query["fixing_calendars"] == "GBP.FX" and query["fixing_lag"] == "2"
+    assert query["frequency"] == "3M" and query["convention"] == "modified_following"
