@@ -1,6 +1,6 @@
 """Python client for the TradingCalendars.com API.
 
-Business days, settlement dates and holidays for FX, currency clearing,
+Business days, FX value dates, settlement dates and holidays for FX, currency clearing,
 banks, payment systems and exchanges. Docs: https://tradingcalendars.com/documentation
 """
 
@@ -20,4 +20,4 @@ __all__ = [
     "TradingCalendars",
     "TradingCalendarsError",
 ]
-__version__ = "0.2.0"
+__version__ = "0.3.0"

@@ -1,7 +1,7 @@
 # tradingcalendars
 
 Python client for the [TradingCalendars.com](https://tradingcalendars.com) API: **business days,
-T+N settlement dates and holidays** for FX markets, currency clearing, bank holidays, payment
+FX value dates, T+N settlement dates and holidays** for FX markets, currency clearing, bank holidays, payment
 systems (TARGET2, Fedwire, CHAPS…) and stock exchanges, including half days and early closes.
 
 - 50 currencies, 69 financial centres, 29 payment systems, 61 exchanges ([coverage](https://tradingcalendars.com/coverage))
@@ -24,8 +24,12 @@ from tradingcalendars import TradingCalendars
 
 tc = TradingCalendars(api_key="YOUR_API_KEY")   # or set TRADINGCALENDARS_API_KEY
 
-# T+2 value date for a EUR/USD trade done on 23 December 2026
-tc.add_business_days(["USD.FX", "EUR.FX"], "2026-12-23", 2)
+# Spot value date for a EUR/USD trade done on 25 November 2026
+tc.fx_value_date("EURUSD", "2026-11-25")
+# datetime.date(2026, 11, 27)  -> US Thanksgiving on day 1 does not delay spot (the USD rule)
+
+# T+1 settlement of a NYSE trade done on 24 December 2026
+tc.add_business_days("XNYS.SETTLE", "2026-12-24", 1)
 # datetime.date(2026, 12, 28)  -> skips Christmas and the weekend
 
 # Is a date open in several calendars at once?
@@ -47,7 +51,31 @@ tc.market_status("XNYS")
 ```
 
 Every `*_details` variant (`add_business_days_details`, `is_business_day_details`,
-`business_days_between_details`, `adjust_date_details`, `schedule_details`) returns the full answer, including each skipped day and why.
+`business_days_between_details`, `fx_value_date_details`, `adjust_date_details`,
+`schedule_details`) returns the full answer, including each skipped day and why.
+
+## FX spot and value dates
+
+`fx_value_date` applies the market's spot conventions for you: T+2 (T+1 for USD/CAD,
+USD/TRY and USD/PHP), the USD rule (a US holiday before the value date does not count
+if the other currency is open), and a value date open in USD for crosses such as EUR/GBP.
+It uses each currency's FX market calendar (`EUR.FX`, `USD.FX`…).
+
+```python
+tc.fx_value_date("USD/CAD", "2026-12-24")          # datetime.date(2026, 12, 29): T+1 pair
+tc.fx_value_date("EURGBP", "2026-11-24")           # datetime.date(2026, 11, 27): Thanksgiving is
+                                                   # a US holiday, so not a value date for a cross
+tc.fx_value_date("EURUSD", "2026-11-25", tenor="tom")
+
+answer = tc.fx_value_date_details("EURUSD", "2026-11-25")
+answer["joint_calendar_date"]   # '2026-11-30': what a plain count on both calendars gives
+for day in answer["days"]:
+    print(day["date"], day["counted"], day["closed"])
+# 2026-11-26 True {'USD': 'Thanksgiving Day'}
+# 2026-11-27 True {}
+```
+
+Try it without code in the free [FX value date calculator](https://tradingcalendars.com/tools/fx-value-date-calculator).
 
 ## Business day conventions and cash-flow schedules
 

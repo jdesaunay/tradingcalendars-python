@@ -160,3 +160,28 @@ def test_adjust_date_and_schedule(calls):
     assert query["start"] == "2026-11-26" and query["end_of_month"] == "true"
     assert query["fixing_calendars"] == "GBP.FX" and query["fixing_lag"] == "2"
     assert query["frequency"] == "3M" and query["convention"] == "modified_following"
+
+
+def test_fx_value_date(calls):
+    seen, replies = calls
+    replies["/v1/fx-value-date"] = (
+        200,
+        {
+            "pair": "EURUSD",
+            "value_date": "2026-11-27",
+            "joint_calendar_date": "2026-11-30",
+            "days": [
+                {"date": "2026-11-26", "counted": True, "day": 1,
+                 "closed": {"USD": "Thanksgiving Day"}, "usd_rule_applied": True},
+                {"date": "2026-11-27", "counted": True, "day": 2, "closed": {}},
+            ],
+        },
+    )
+    tc = TradingCalendars(api_key="k")
+    assert tc.fx_value_date("EUR/USD", date(2026, 11, 25)) == date(2026, 11, 27)
+    assert seen[-1]["path"] == "/v1/fx-value-date"
+    assert seen[-1]["query"] == {"pair": "EUR/USD", "trade_date": "2026-11-25", "tenor": "spot"}
+    details = tc.fx_value_date_details("EURUSD", tenor="tom")
+    assert details["joint_calendar_date"] == "2026-11-30"
+    assert seen[-1]["query"] == {"pair": "EURUSD", "tenor": "tom"}  # today: no trade_date sent
+    assert seen[-1]["agent"] == "tradingcalendars-python/0.3.0"

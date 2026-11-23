@@ -19,7 +19,7 @@ from tradingcalendars.errors import (
 )
 
 DEFAULT_BASE_URL = "https://api.tradingcalendars.com/v1"
-USER_AGENT = "tradingcalendars-python/0.2.0"
+USER_AGENT = "tradingcalendars-python/0.3.0"
 
 DateLike = Union[date, str]
 Calendars = Union[str, Sequence[str]]
@@ -153,6 +153,27 @@ class TradingCalendars:
         return self._get(
             "/business-days-between",
             {"calendars": _codes(calendars), "start": _iso(start), "end": _iso(end)},
+        )
+
+    # ---- FX value dates ----------------------------------------------------
+    def fx_value_date(
+        self, pair: str, trade_date: Optional[DateLike] = None, tenor: str = "spot"
+    ) -> date:
+        """Value date of an FX trade in ``pair`` (``"EURUSD"`` or ``"EUR/USD"``),
+        with market spot conventions: T+2 (T+1 for USD/CAD, USD/TRY and USD/PHP,
+        and for ``tenor="tom"``), a US holiday before the value date ignored when
+        the other currency is open (the USD rule), and USD also open on the value
+        date of a cross. ``trade_date`` defaults to today."""
+        return date.fromisoformat(self.fx_value_date_details(pair, trade_date, tenor)["value_date"])
+
+    def fx_value_date_details(
+        self, pair: str, trade_date: Optional[DateLike] = None, tenor: str = "spot"
+    ) -> dict:
+        """Full answer: each day up to the value date, counted or skipped and why,
+        the calendars used, and ``joint_calendar_date`` when a plain count on both
+        calendars gives a different date."""
+        return self._get(
+            "/fx-value-date", {"pair": pair, "trade_date": _iso(trade_date), "tenor": tenor}
         )
 
     # ---- conventions and schedules --------------------------------------
