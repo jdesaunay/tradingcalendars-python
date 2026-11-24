@@ -161,9 +161,10 @@ class TradingCalendars:
     ) -> date:
         """Value date of an FX trade in ``pair`` (``"EURUSD"`` or ``"EUR/USD"``),
         with market spot conventions: T+2 (T+1 for USD/CAD, USD/TRY and USD/PHP,
-        and for ``tenor="tom"``), a US holiday before the value date ignored when
-        the other currency is open (the USD rule), and USD also open on the value
-        date of a cross. ``trade_date`` defaults to today."""
+        and for ``tenor="tom"``), each currency counting its own business days, a
+        US holiday before the value date ignored (the USD rule) except against MXN
+        and the South American currencies, and a cross taking the later of its two
+        spot dates against USD. ``trade_date`` defaults to today."""
         return date.fromisoformat(self.fx_value_date_details(pair, trade_date, tenor)["value_date"])
 
     def fx_value_date_details(

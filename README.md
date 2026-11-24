@@ -57,14 +57,17 @@ Every `*_details` variant (`add_business_days_details`, `is_business_day_details
 ## FX spot and value dates
 
 `fx_value_date` applies the market's spot conventions for you: T+2 (T+1 for USD/CAD,
-USD/TRY and USD/PHP), the USD rule (a US holiday before the value date does not count
-if the other currency is open), and a value date open in USD for crosses such as EUR/GBP.
+USD/TRY and USD/PHP), each currency counting its own business days, the USD rule (a US
+holiday before the value date does not delay spot, except against MXN and the South
+American currencies), and a cross taking the later of its two spot dates against USD.
 It uses each currency's FX market calendar (`EUR.FX`, `USD.FX`…).
 
 ```python
 tc.fx_value_date("USD/CAD", "2026-12-24")          # datetime.date(2026, 12, 29): T+1 pair
 tc.fx_value_date("EURGBP", "2026-11-24")           # datetime.date(2026, 11, 27): Thanksgiving is
                                                    # a US holiday, so not a value date for a cross
+tc.fx_value_date("USDMXN", "2026-11-25")           # datetime.date(2026, 11, 30): against the peso,
+                                                   # the US holiday counts
 tc.fx_value_date("EURUSD", "2026-11-25", tenor="tom")
 
 answer = tc.fx_value_date_details("EURUSD", "2026-11-25")
